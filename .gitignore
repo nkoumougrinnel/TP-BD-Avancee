@@ -1,0 +1,12 @@
+# Ignorer les données des bases de données (Volumes Docker)
+**/data/
+**/postgres/
+**/mongodb/
+**/cassandra/
+**/neo4j/
+**/redis/
+**/rstudio/
+
+# Ignorer les fichiers temporaires et logs
+*.log
+.DS_Store
