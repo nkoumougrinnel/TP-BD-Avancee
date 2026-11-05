@@ -1,4 +1,4 @@
-# 🎓 TP Bases de Données Avancées - Groupe 4
+# 🎓 TP Bases de Données Avancées - Groupe 7
 
 Ce dépôt centralise l'ensemble des travaux réalisés pour le module de Bases de Données Avancées. Il contient l'infrastructure de déploiement ainsi que les rendus des trois projets pratiques.
 
