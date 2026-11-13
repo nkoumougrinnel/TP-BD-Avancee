@@ -103,7 +103,13 @@ L'administrateur doit controler les acces a la base selon les responsabilites pr
    - role_supervision.
 
 
+\c entreprise_tp postgres
 
+CREATE ROLE role_commercial   NOLOGIN;
+CREATE ROLE role_stock        NOLOGIN;
+CREATE ROLE role_comptabilite NOLOGIN;
+CREATE ROLE role_logistique   NOLOGIN;
+CREATE ROLE role_supervisor  NOLOGIN;
 
 
 2. Crer les comptes PostgreSQL suivants :
@@ -113,11 +119,69 @@ L'administrateur doit controler les acces a la base selon les responsabilites pr
    - user_logistique;
    - user_superviseur.
 
+CREATE USER user_commercial   WITH PASSWORD 'Commercial#2026' NOSUPERUSER;
+CREATE USER user_stock        WITH PASSWORD 'Stock#2026'      NOSUPERUSER;
+CREATE USER user_comptabilite WITH PASSWORD 'Compta#2026'     NOSUPERUSER;
+CREATE USER user_logistique   WITH PASSWORD 'Logistique#2026' NOSUPERUSER;
+CREATE USER user_superviseur  WITH PASSWORD 'Superviseur#2026' NOSUPERUSER;  
+
 3. Associer chaque compte au role correspondant.
+
+GRANT role_commercial   TO user_commercial;
+GRANT role_stock        TO user_stock;
+GRANT role_comptabilite TO user_comptabilite;
+GRANT role_logistique   TO user_logistique;
+GRANT role_supervisor  TO user_superviseur;
 
 4. Accorder les privileges necessaires a chaque fonction.
 
+
+GRANT USAGE ON SCHEMA public TO role_commercial, role_stock,
+  role_comptabilite, role_logistique, role_supervision;
+
+// les privileges pour le role commercial.
+
+GRANT SELECT, INSERT, UPDATE ON clients, commandes, lignes_commande TO role_commercial;
+GRANT SELECT ON produits TO role_commercial;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO role_commercial;
+
+// ceux du role stock.
+
+GRANT SELECT, UPDATE ON produits TO role_stock;
+GRANT SELECT ON commandes, lignes_commande TO role_stock;
+
+// ceux du role  comptabilite
+
+GRANT SELECT, INSERT, UPDATE ON paiements TO role_comptabilite;
+GRANT SELECT ON commandes, clients TO role_comptabilite;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO role_comptabilite;
+
+// ceux du role logistique
+
+GRANT SELECT ON commandes, clients, lignes_commande, produits TO role_logistique;
+GRANT UPDATE (statut) ON commandes TO role_logistique;
+
+// ceux du role supervisor. lecture sur toutes les tables slm.
+
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO role_supervision;
+
 5. Tester au moins deux operations autorisees et une operation interdite.
+SET ROLE user_commercial;
+
+// permission  autorisée ici  : lire les produits
+
+SELECT libelle, prix, stock FROM produits;
+
+// permission encore autorisée dans ce cas : créer une commande
+
+INSERT INTO commandes (id_client, id_utilisateur, statut, montant_total)
+VALUES (1, 1, 'EN_ATTENTE', 12000);
+
+// permission refusee il ne peut pas supprimer  : supprimer des paiements. msg "ERREUR : permission denied for table paiements"
+
+DELETE FROM paiements WHERE id_paiement = 1;
+
+RESET ROLE;
 
 6. Expliquer la difference entre un role PostgreSQL, un compte de connexion et un utilisateur fonctionnel enregistre dans la table utilisateurs.
 
